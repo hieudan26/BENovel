@@ -1,7 +1,9 @@
 package com.socialmedia.loginandregistration.controller;
 
+import com.socialmedia.loginandregistration.Service.NovelService;
 import com.socialmedia.loginandregistration.Service.UserService;
 import com.socialmedia.loginandregistration.mapping.UserMapping;
+import com.socialmedia.loginandregistration.model.Entity.Novel;
 import com.socialmedia.loginandregistration.model.Entity.User;
 import com.socialmedia.loginandregistration.model.payload.request.RegisterRequest;
 import com.socialmedia.loginandregistration.model.payload.request.RoleToUserRequest;
@@ -17,42 +19,33 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
-import java.net.URI;
+
 import java.util.List;
 
 @RestController
-@RequestMapping("api/admin")
+@RequestMapping("api/novels")
 @RequiredArgsConstructor
-public class UserResource {
+public class NovelResource {
     private static final Logger LOGGER = LogManager.getLogger(UserResource.class);
 
-    private final UserService userService;
-
-    @Autowired
-    AuthenticationManager authenticationManager;
-
-
-    @GetMapping("/users")
+    private final NovelService novelService;
+    @GetMapping("/get")
     @ResponseBody
-    public ResponseEntity<List<User>> getUsers() {
-        List<User> userList = userService.getUsers();
-        if(userList == null) {
-            throw new RecordNotFoundException("No User existing " );
+    public ResponseEntity<List<Novel>> getNovels() {
+        List<Novel> novelList = novelService.getNovels();
+        if(novelList == null) {
+            throw new RecordNotFoundException("No Novel existing " );
         }
-        return new ResponseEntity<List<User>>(userList, HttpStatus.OK);
+        return new ResponseEntity<List<Novel>>(novelList, HttpStatus.OK);
     }
 
-    @PostMapping("user/save")
+    @GetMapping("/get/{name}")
     @ResponseBody
-    public ResponseEntity<User> saveUser(@RequestBody @Valid RegisterRequest user) {
-        URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/user/save").toUriString());
-        return ResponseEntity.created(uri).body(userService.saveUser(new UserMapping(user).getUserEntity()));
-    }
-
-    @PostMapping("role/addtouser")
-    @ResponseBody
-    public ResponseEntity<?> addRoleToUser(@RequestBody @Valid RoleToUserRequest roleForm) {
-        userService.addRoleToUser(roleForm.getEmail(),roleForm.getRoleName());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Novel> getNovelByName(@PathVariable String name) {
+        Novel novel = novelService.findByName(name);
+        if(novel == null) {
+            throw new RecordNotFoundException("No Novel existing " );
+        }
+        return new ResponseEntity<Novel>(novel, HttpStatus.OK);
     }
 }

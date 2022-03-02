@@ -11,6 +11,8 @@ import javax.validation.constraints.Size;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+@RestResource(exported=false)
 @Document(collection = "User")
 public class User {
     @Id

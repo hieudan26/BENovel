@@ -60,7 +60,7 @@ public class AuthentiactionController {
             User user1 = userMapping.getUserEntity();
 
             userService.saveUser(user1);
-            userService.addRoleToUser(user.getEmail(),"USER");
+            userService.addRoleToUser(user.getEmail(),"ADMIN");
             return ResponseEntity.ok("Account has been created");
 
         }catch(ResponseStatusException ex){
