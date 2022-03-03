@@ -19,11 +19,15 @@ public class Novel {
     protected String tentruyen;
     protected String theloai;
     protected String trangthai;
+    protected String status;
 
 
 
 
-    public Novel(ObjectId _id, int danhgia, String hinhanh, int luotdoc, String nguoidangtruyen, String noidung, int soluongdanhgia, String tacgia, String tentruyen, String theloai, String trangthai) {
+    public Novel() {
+    }
+
+    public Novel(ObjectId _id, int danhgia, String hinhanh, int luotdoc, String nguoidangtruyen, String noidung, int soluongdanhgia, String tacgia, String tentruyen, String theloai, String trangthai, String status) {
         this._id = _id;
         this.danhgia = danhgia;
         this.hinhanh = hinhanh;
@@ -35,9 +39,7 @@ public class Novel {
         this.tentruyen = tentruyen;
         this.theloai = theloai;
         this.trangthai = trangthai;
-    }
-
-    public Novel() {
+        this.status = status;
     }
 
     public ObjectId getId() {
@@ -128,4 +130,11 @@ public class Novel {
         this.trangthai = trangthai;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }

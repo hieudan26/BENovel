@@ -10,7 +10,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 public class Chapter {
     @Id
     protected ObjectId _id;
-    protected int chap_number;
+    protected int chapnumber;
     protected String content;
     protected ObjectId dautruyenId;
     protected String tenchap;
@@ -18,9 +18,9 @@ public class Chapter {
     public Chapter() {
     }
 
-    public Chapter(ObjectId _id, int chap_number, String content, ObjectId dautruyenId, String tenchap) {
+    public Chapter(ObjectId _id, int chapnumber, String content, ObjectId dautruyenId, String tenchap) {
         this._id = _id;
-        this.chap_number = chap_number;
+        this.chapnumber = chapnumber;
         this.content = content;
         this.dautruyenId = dautruyenId;
         this.tenchap = tenchap;
@@ -33,12 +33,12 @@ public class Chapter {
         this._id = id;
     }
 
-    public int getChap_number() {
-        return chap_number;
+    public int getChapnumber() {
+        return chapnumber;
     }
 
-    public void setChap_number(int chap_number) {
-        this.chap_number = chap_number;
+    public void setChapnumber(int chapnumber) {
+        this.chapnumber = chapnumber;
     }
 
     public String getContent() {
