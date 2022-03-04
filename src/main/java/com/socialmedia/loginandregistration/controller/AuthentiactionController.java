@@ -8,15 +8,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.socialmedia.loginandregistration.Service.UserService;
 import com.socialmedia.loginandregistration.mapping.UserMapping;
 import com.socialmedia.loginandregistration.model.Entity.User;
+import com.socialmedia.loginandregistration.model.payload.request.LoginRequest;
 import com.socialmedia.loginandregistration.model.payload.request.RegisterRequest;
+import com.socialmedia.loginandregistration.model.payload.response.ErrorResponseMap;
+import com.socialmedia.loginandregistration.model.payload.response.BaseCustomResponse.HttpMessageNotReadableException;
+import com.socialmedia.loginandregistration.model.payload.response.BaseCustomResponse.MethodArgumentNotValidException;
+import com.socialmedia.loginandregistration.model.payload.response.SuccessResponse;
 import com.socialmedia.loginandregistration.security.DTO.AppUserDetail;
+import com.socialmedia.loginandregistration.security.JWT.JwtUtils;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,72 +53,123 @@ public class AuthentiactionController {
     @Autowired
     AuthenticationManager authenticationManager;
 
+    @Autowired
+    JwtUtils jwtUtils;
+
     @PostMapping("/register")
     @ResponseBody
-    public ResponseEntity  addUser(@RequestBody @Valid RegisterRequest user) {
+    public ResponseEntity<SuccessResponse>  addUser(@RequestBody @Valid RegisterRequest user, BindingResult errors) throws Exception {
+
+        if (errors.hasErrors()) {
+            throw new MethodArgumentNotValidException(errors);
+        }
         if (user != null) {
             LOGGER.info("Inside addIssuer, adding: " + user.toString());
+            throw new HttpMessageNotReadableException("Missing field");
         } else {
             LOGGER.info("Inside addIssuer...");
         }
+
         if(userService.existsByEmail(user.getEmail())){
-            return ResponseEntity
-                    .badRequest()
-                    .body("Error: Email already taken");
+            return SendErrorValid("email",user.getEmail());
         }
+
+        if(userService.existsByUsername(user.getUsername())){
+            return SendErrorValid("username",user.getUsername());
+        }
+
         try{
 
             UserMapping userMapping = new UserMapping(user);
             User user1 = userMapping.getUserEntity();
 
             userService.saveUser(user1);
-            userService.addRoleToUser(user.getEmail(),"ADMIN");
-            return ResponseEntity.ok("Account has been created");
+            userService.addRoleToUser(user.getEmail(),"USER");
 
-        }catch(ResponseStatusException ex){
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT, "Can't create your account");
+            SuccessResponse response = new SuccessResponse();
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Register successful");
+            response.setSuccess(true);
+            response.getData().put("email",user.getEmail());
+            return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
+
+        }catch(Exception ex){
+            throw new Exception("Can't create your account");
         }
     }
 
+    @PostMapping("/login")
+    @ResponseBody
+    public ResponseEntity<SuccessResponse>  Sigin(@RequestBody @Valid LoginRequest user, BindingResult errors) throws Exception {
 
-    @GetMapping("/refreshtoken")
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        AppUserDetail userDetails = (AppUserDetail) authentication.getPrincipal();
+
+        String accessToken = jwtUtils.generateJwtToken(userDetails);
+        String refreshToken = jwtUtils.generateRefreshJwtToken(userDetails);
+
+        SuccessResponse response = new SuccessResponse();
+        response.setStatus(HttpStatus.OK.value());
+        response.setMessage("Login successful");
+        response.setSuccess(true);
+
+        response.getData().put("accessToken",accessToken);
+        response.getData().put("refreshToken",refreshToken);
+        response.getData().put("info",userDetails);
+
+        return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
+    }
+    @PostMapping("/refreshtoken")
+    public ResponseEntity<SuccessResponse> refreshToken(@Parameter String refreshToken, HttpServletRequest request) {
         String authorizationHeader = request.getHeader(AUTHORIZATION);
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
-            try {
+            String accessToken = authorizationHeader.substring("Bearer ".length());
 
-                String refresh_token = authorizationHeader.substring("Bearer ".length());
-                Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
-                JWTVerifier verifier = JWT.require(algorithm).build();
-                DecodedJWT decodedJWT = verifier.verify(refresh_token);
-                String email = decodedJWT.getSubject();
-
-                AppUserDetail user = AppUserDetail.build(userService.getUser(email));
-                String access_token = JWT.create()
-                        .withSubject(user.getUsername())
-                        .withExpiresAt(new Date(System.currentTimeMillis()+ 10*60*1000))
-                        .withIssuer(request.getRequestURL().toString())
-                        .withClaim("roles",user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-                        .sign(algorithm);
-
-                Map<String,String> tokens = new HashMap<>();
-                tokens.put("access_token",access_token);
-                tokens.put("refresh_token",refresh_token);
-                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                new ObjectMapper().writeValue(response.getOutputStream(),tokens);
-            }catch (Exception ex){
-
-                response.setStatus(HttpStatus.FORBIDDEN.value());
-                Map<String,String> error = new HashMap<>();
-                error.put("error_message",ex.getMessage());
-                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            if(jwtUtils.validateExpiredToken(accessToken) == false){
+                throw new BadCredentialsException("access token is not expired");
             }
+
+            if(refreshToken == null){
+                throw new BadCredentialsException("refresh token is missing");
+            }
+
+            if(!jwtUtils.getUserNameFromJwtToken(accessToken).equals(jwtUtils.getUserNameFromJwtToken(refreshToken))){
+                throw new BadCredentialsException("two token are not a pair");
+            }
+
+
+            AppUserDetail userDetails =  AppUserDetail.build(userService.findByUsername(jwtUtils.getUserNameFromJwtToken(refreshToken)));
+
+            accessToken = jwtUtils.generateJwtToken(userDetails);
+
+            SuccessResponse response = new SuccessResponse();
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Login successful");
+            response.setSuccess(true);
+
+            response.getData().put("accessToken",accessToken);
+            response.getData().put("refreshToken",refreshToken);
+            response.getData().put("info",userDetails);
+
+            return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
         }
         else
         {
-            throw new RuntimeException("refresh token is missing");
+            throw new BadCredentialsException("access token is missing");
         }
     }
 
+    private ResponseEntity SendErrorValid(String field, String message){
+        ErrorResponseMap errorResponseMap = new ErrorResponseMap();
+        Map<String,String> temp =new HashMap<>();
+        errorResponseMap.setMessage("Field already taken");
+        temp.put(field,message+" has already used");
+        errorResponseMap.setStatus(HttpStatus.BAD_REQUEST.value());
+        errorResponseMap.setDetails(temp);
+        return ResponseEntity
+                .badRequest()
+                .body(errorResponseMap);
+    }
 }

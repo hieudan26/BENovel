@@ -26,11 +26,11 @@ public class UserMapping {
 
     private void registerToEntity(){
         this.userEntity = new User();
-        this.userEntity.setEmail(this.registerRequest.getEmail());
+        this.userEntity.setUsername(this.registerRequest.getUsername());
         this.userEntity.setPassword(this.registerRequest.getPassword());
-        this.userEntity.setFirstname(this.registerRequest.getFirstName());
-        this.userEntity.setLastname(this.registerRequest.getLastName());
-        this.userEntity.setUsername("hieudan");
+        this.userEntity.setEmail(this.registerRequest.getEmail());
+        this.userEntity.setFirstname("");
+        this.userEntity.setLastname("");
         this.userEntity.setStatus("UnActive");
     }
 }

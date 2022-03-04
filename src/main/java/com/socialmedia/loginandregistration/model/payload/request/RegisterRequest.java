@@ -1,36 +1,40 @@
 package com.socialmedia.loginandregistration.model.payload.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Email;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegisterRequest {
+
+    @NotEmpty(message = "Thiếu username")
+    @Size(min = 6, message = "username tối thiểu 6 kí tự")
+    private String username;
+
     @NotEmpty(message = "Thiếu Email")
-    @Email(message = "Email không hợp lệ")
+    @Email(regexp = ".+@.+\\..+",message = "Email không hợp lệ")
     private String email;
 
     @NotEmpty(message = "Thiếu password")
-//    @Min(value = 8, message = "Password phải từ 8 kí tự trở lên")
+    @Size(min = 8, message = "Password phải từ 8 kí tự trở lên")
     private String password;
 
-    @NotEmpty(message = "Thiếu tên")
-    private String firstName;
 
-    @NotEmpty(message = "Thiếu họ")
-    private String lastName;
 
-    public String getEmail() {
-        return email;
+    public String getUsername() {
+        return username;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
@@ -41,19 +45,14 @@ public class RegisterRequest {
         this.password = password;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getEmail() {
+        return email;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public String getLastName() {
-        return lastName;
-    }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
+
 }

@@ -10,11 +10,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 public class AppUserDetail implements UserDetails {
     private static final long serialVersionUID = 1L;
+    @JsonIgnore
     private ObjectId id;
     private String username;
     private String email;
     @JsonIgnore
     private String password;
+    @JsonIgnore
     private Collection<? extends GrantedAuthority> authorities;
     private Collection<String> roles;
     public AppUserDetail(ObjectId id, String username, String email, String password,

@@ -32,7 +32,7 @@ public class NovelResource {
     private final NovelService novelService;
     private final ChapterService chapterService;
 
-    @GetMapping("/listtruyen")
+    @GetMapping("/")
     @ResponseBody
     public ResponseEntity<List<Novel>> getNovels(
                                                     @RequestParam(defaultValue = "None") String status,
@@ -96,7 +96,7 @@ public class NovelResource {
 
 
 
-    @GetMapping("/get/{name}")
+    @GetMapping("/novel/{name}")
     @ResponseBody
     public ResponseEntity<Novel> getNovelByName(@PathVariable String name) {
         Novel novel = novelService.findByName(name);
@@ -106,7 +106,7 @@ public class NovelResource {
         return new ResponseEntity<Novel>(novel, HttpStatus.OK);
     }
 
-    @GetMapping("/get/{name}/chuong")
+    @GetMapping("/novel/{name}/chuong")
     @ResponseBody
     public ResponseEntity<List<Chapter>> getChapterpagination(@PathVariable String name,
                                                     @RequestParam(defaultValue = "0") int page,
@@ -125,7 +125,7 @@ public class NovelResource {
         return new ResponseEntity<List<Chapter>>(chapterList, HttpStatus.OK);
     }
 
-    @GetMapping("/get/{name}/chuong/{chapterNumber}")
+    @GetMapping("/novel/{name}/chuong/{chapterNumber}")
     @ResponseBody
     public ResponseEntity<Chapter> getChapter(@PathVariable String name,@PathVariable int chapterNumber) {
         Novel novel = novelService.findByName(name);
