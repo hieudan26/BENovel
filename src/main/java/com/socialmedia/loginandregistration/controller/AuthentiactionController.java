@@ -9,6 +9,7 @@ import com.socialmedia.loginandregistration.Service.UserService;
 import com.socialmedia.loginandregistration.mapping.UserMapping;
 import com.socialmedia.loginandregistration.model.Entity.User;
 import com.socialmedia.loginandregistration.model.payload.request.LoginRequest;
+import com.socialmedia.loginandregistration.model.payload.request.RefreshTokenRequest;
 import com.socialmedia.loginandregistration.model.payload.request.RegisterRequest;
 import com.socialmedia.loginandregistration.model.payload.response.ErrorResponseMap;
 import com.socialmedia.loginandregistration.model.payload.response.BaseCustomResponse.HttpMessageNotReadableException;
@@ -120,11 +121,11 @@ public class AuthentiactionController {
         response.getData().put("refreshToken",refreshToken);
         response.getData().put("name",loginUser.getTenhienthi());
         response.getData().put("image",loginUser.getImage());
-        
+
         return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
     }
     @PostMapping("/refreshtoken")
-    public ResponseEntity<SuccessResponse> refreshToken(@RequestBody Map<String,String> refreshToken, HttpServletRequest request) {
+    public ResponseEntity<SuccessResponse> refreshToken(@RequestBody RefreshTokenRequest refreshToken, HttpServletRequest request) {
         String authorizationHeader = request.getHeader(AUTHORIZATION);
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
             String accessToken = authorizationHeader.substring("Bearer ".length());
@@ -133,7 +134,7 @@ public class AuthentiactionController {
                 throw new BadCredentialsException("access token is not expired");
             }
 
-            if(jwtUtils.validateExpiredToken(refreshToken.get("refreshToken")) == true){
+            if(jwtUtils.validateExpiredToken(refreshToken.getRefreshToken()) == true){
                 throw new BadCredentialsException("refresh token is expired");
             }
 
@@ -141,12 +142,12 @@ public class AuthentiactionController {
                 throw new BadCredentialsException("refresh token is missing");
             }
 
-            if(!jwtUtils.getUserNameFromJwtToken(refreshToken.get("refreshToken")).equals(jwtUtils.getUserNameFromJwtToken(refreshToken.get("refreshToken")))){
+            if(!jwtUtils.getUserNameFromJwtToken(refreshToken.getRefreshToken()).equals(jwtUtils.getUserNameFromJwtToken(refreshToken.getRefreshToken()))){
                 throw new BadCredentialsException("two token are not a pair");
             }
 
 
-            AppUserDetail userDetails =  AppUserDetail.build(userService.findByUsername(jwtUtils.getUserNameFromJwtToken(refreshToken.get("refreshToken"))));
+            AppUserDetail userDetails =  AppUserDetail.build(userService.findByUsername(jwtUtils.getUserNameFromJwtToken(refreshToken.getRefreshToken())));
 
             accessToken = jwtUtils.generateJwtToken(userDetails);
 

@@ -5,7 +5,6 @@ import com.socialmedia.loginandregistration.Service.UserService;
 import com.socialmedia.loginandregistration.mapping.UserMapping;
 import com.socialmedia.loginandregistration.model.Entity.User;
 import com.socialmedia.loginandregistration.model.payload.request.RegisterAdminRequest;
-import com.socialmedia.loginandregistration.model.payload.request.RegisterRequest;
 import com.socialmedia.loginandregistration.model.payload.request.RoleToUserRequest;
 import com.socialmedia.loginandregistration.model.payload.response.BaseCustomResponse.HttpMessageNotReadableException;
 import com.socialmedia.loginandregistration.model.payload.response.BaseCustomResponse.MethodArgumentNotValidException;
@@ -19,22 +18,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/admin")
+@RequestMapping("api/user")
 @RequiredArgsConstructor
-public class UserResource {
-    private static final Logger LOGGER = LogManager.getLogger(UserResource.class);
+public class UserResources {
+    private static final Logger LOGGER = LogManager.getLogger(AdminResource.class);
 
     private final UserService userService;
     private final RoleService roleService;
@@ -113,15 +109,15 @@ public class UserResource {
             throw new HttpMessageNotReadableException("Role is not exist");
         }
         try{
-        userService.addRoleToUser(roleForm.getEmail(),roleForm.getRoleName());
+            userService.addRoleToUser(roleForm.getEmail(),roleForm.getRoleName());
 
-        SuccessResponse response = new SuccessResponse();
-        response.setStatus(HttpStatus.OK.value());
-        response.setMessage("add user successful");
-        response.setSuccess(true);
-        response.getData().put("email",roleForm.getEmail());
-        response.getData().put("role",roleForm.getRoleName());
-        return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
+            SuccessResponse response = new SuccessResponse();
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("add user successful");
+            response.setSuccess(true);
+            response.getData().put("email",roleForm.getEmail());
+            response.getData().put("role",roleForm.getRoleName());
+            return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
 
         }catch(Exception ex){
             throw new Exception("Can't add role to account");
