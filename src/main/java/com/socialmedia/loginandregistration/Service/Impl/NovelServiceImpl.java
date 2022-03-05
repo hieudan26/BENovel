@@ -25,6 +25,7 @@ import java.util.Set;
 @Service @RequiredArgsConstructor @Transactional @Slf4j
 public class NovelServiceImpl implements NovelService {
     final NovelRepository novelRepository;
+
     @Override
     public List<Novel> getNovels(){
         log.info("Fetching all Novels ");

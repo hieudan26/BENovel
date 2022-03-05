@@ -3,6 +3,8 @@ package com.socialmedia.loginandregistration.model.Entity;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Unwrapped;
 import org.springframework.data.rest.core.annotation.RestResource;
+
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import javax.validation.constraints.Email;
@@ -17,45 +19,49 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class User {
     @Id
     protected  ObjectId _id;
-    @NotBlank
-    @Size(max = 20)
     protected  String username;
-    @NotBlank
-    @Size(max = 50)
-    @Email
     protected  String email;
-    @NotBlank
-    @Size(max = 120)
     protected  String password;
-    @NotBlank
-    @Size(max = 20)
-    protected  String firstname;
-    @NotBlank
-    @Size(max = 20)
-    protected  String lastname;
+    protected  String tenhienthi;
+    protected   Date  birthdate;
+    protected   Date createdate;
+    protected  String image;
+    protected Boolean active;
     protected  String status;
     @DBRef
 //    @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     protected  Set<Role> roles = new HashSet<>();
 
-    public User() {
-    }
-    public User(String username, String email, String password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-    }
-
-    public User(ObjectId _id, String username, String email, String password, String firstname, String lastname, String status, Set<Role> roles) {
+    public User(ObjectId _id, String username, String email, String password, String tenhienthi, Date birthdate, Date createdate, String image, Boolean active, String status, Set<Role> roles) {
         this._id = _id;
         this.username = username;
         this.email = email;
         this.password = password;
-        this.firstname = firstname;
-        this.lastname = lastname;
+        this.tenhienthi = tenhienthi;
+        this.birthdate = birthdate;
+        this.createdate = createdate;
+        this.image = image;
+        this.active = active;
         this.status = status;
         this.roles = roles;
     }
+
+    public User() {
+    }
+    public User(String username, String email, String password) {
+        this._id = new ObjectId();
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.tenhienthi= username;
+        this.birthdate = new Date();
+        this.createdate = new Date();
+        this.image ="";
+        this.active = false;
+        this.status="None";
+    }
+
+
 
     public ObjectId getId() {
         return _id;
@@ -81,33 +87,55 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-    public String getFirstname() {
-        return firstname;
-    }
-
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
-    }
-
     public Set<Role> getRoles() {
         return roles;
     }
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
-
     public String getStatus() {
         return status;
     }
     public void setStatus(String status) {
         this.status = status;
+    }
+    public String getTenhienthi() {
+        return tenhienthi;
+    }
+
+    public void setTenhienthi(String tenhienthi) {
+        this.tenhienthi = tenhienthi;
+    }
+
+    public Date getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(Date birthdate) {
+        this.birthdate = birthdate;
+    }
+
+    public Date getCreatedate() {
+        return createdate;
+    }
+
+    public void setCreatedate(Date createdate) {
+        this.createdate = createdate;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 }

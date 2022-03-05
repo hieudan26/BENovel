@@ -23,10 +23,17 @@ public class UserServiceImpl implements UserService {
     final UserRepository userRepository;
     final RoleRepository roleRepository;
     @Override
-    public User saveUser(User user) {
-
+    public User saveUser(User user,String roleName) {
+        Optional<Role> role = roleRepository.findByName(roleName);
         log.info("Saving user {} to database",user.getEmail());
-        user.setId(new ObjectId());
+        if(user.getRoles() == null){
+            Set<Role> RoleSet = new HashSet<>();
+            RoleSet.add(role.get());
+            user.setRoles(RoleSet);
+        }
+        else{
+            user.getRoles().add(role.get());
+        }
         return userRepository.save(user);
     }
 

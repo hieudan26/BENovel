@@ -1,11 +1,17 @@
 package com.socialmedia.loginandregistration.controller;
 
+import com.socialmedia.loginandregistration.Service.RoleService;
 import com.socialmedia.loginandregistration.Service.UserService;
 import com.socialmedia.loginandregistration.mapping.UserMapping;
 import com.socialmedia.loginandregistration.model.Entity.User;
+import com.socialmedia.loginandregistration.model.payload.request.RegisterAdminRequest;
 import com.socialmedia.loginandregistration.model.payload.request.RegisterRequest;
 import com.socialmedia.loginandregistration.model.payload.request.RoleToUserRequest;
+import com.socialmedia.loginandregistration.model.payload.response.BaseCustomResponse.HttpMessageNotReadableException;
+import com.socialmedia.loginandregistration.model.payload.response.BaseCustomResponse.MethodArgumentNotValidException;
 import com.socialmedia.loginandregistration.model.payload.response.BaseCustomResponse.RecordNotFoundException;
+import com.socialmedia.loginandregistration.model.payload.response.ErrorResponseMap;
+import com.socialmedia.loginandregistration.model.payload.response.SuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,12 +19,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/admin")
@@ -27,6 +37,7 @@ public class UserResource {
     private static final Logger LOGGER = LogManager.getLogger(UserResource.class);
 
     private final UserService userService;
+    private final RoleService roleService;
 
     @Autowired
     AuthenticationManager authenticationManager;
@@ -44,15 +55,88 @@ public class UserResource {
 
     @PostMapping("user/save")
     @ResponseBody
-    public ResponseEntity<User> saveUser(@RequestBody @Valid RegisterRequest user) {
-        URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/user/save").toUriString());
-        return ResponseEntity.created(uri).body(userService.saveUser(new UserMapping(user).getUserEntity()));
+    public ResponseEntity<SuccessResponse> saveUser(@RequestBody @Valid RegisterAdminRequest user, BindingResult errors) throws  Exception {
+        if (errors.hasErrors()) {
+            throw new MethodArgumentNotValidException(errors);
+        }
+        if (user == null) {
+            LOGGER.info("Inside addIssuer, adding: " + user.toString());
+            throw new HttpMessageNotReadableException("Missing field");
+        } else {
+            LOGGER.info("Inside addIssuer...");
+        }
+
+        if(userService.existsByEmail(user.getEmail())){
+            return SendErrorValid("email",user.getEmail());
+        }
+
+        if(userService.existsByUsername(user.getUsername())){
+            return SendErrorValid("username",user.getUsername());
+        }
+
+        try{
+
+            User newUser = UserMapping.registerToEntity(user);
+            userService.saveUser(newUser,user.getRoles());
+
+            SuccessResponse response = new SuccessResponse();
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("add user successful");
+            response.setSuccess(true);
+            response.getData().put("email",user.getEmail());
+            return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
+
+        }catch(Exception ex){
+            throw new Exception("Can't create your account");
+        }
     }
 
     @PostMapping("role/addtouser")
     @ResponseBody
-    public ResponseEntity<?> addRoleToUser(@RequestBody @Valid RoleToUserRequest roleForm) {
+    public ResponseEntity<SuccessResponse> addRoleToUser(@RequestBody @Valid RoleToUserRequest roleForm, BindingResult errors) throws  Exception  {
+        if (errors.hasErrors()) {
+            throw new MethodArgumentNotValidException(errors);
+        }
+
+        if (roleForm == null) {
+            LOGGER.info("Inside addIssuer, adding: " + roleForm.toString());
+            throw new HttpMessageNotReadableException("Missing field");
+        } else {
+            LOGGER.info("Inside addIssuer...");
+        }
+
+        if(!userService.existsByEmail(roleForm.getEmail())){
+            throw new HttpMessageNotReadableException("User is not exist");
+        }
+
+        if(roleService.existsByRoleName(roleForm.getRoleName())){
+            throw new HttpMessageNotReadableException("Role is not exist");
+        }
+        try{
         userService.addRoleToUser(roleForm.getEmail(),roleForm.getRoleName());
-        return ResponseEntity.ok().build();
+
+        SuccessResponse response = new SuccessResponse();
+        response.setStatus(HttpStatus.OK.value());
+        response.setMessage("add user successful");
+        response.setSuccess(true);
+        response.getData().put("email",roleForm.getEmail());
+        response.getData().put("role",roleForm.getRoleName());
+        return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
+
+        }catch(Exception ex){
+            throw new Exception("Can't add role to account");
+        }
+    }
+
+    private ResponseEntity SendErrorValid(String field, String message){
+        ErrorResponseMap errorResponseMap = new ErrorResponseMap();
+        Map<String,String> temp =new HashMap<>();
+        errorResponseMap.setMessage("Field already taken");
+        temp.put(field,message+" has already used");
+        errorResponseMap.setStatus(HttpStatus.BAD_REQUEST.value());
+        errorResponseMap.setDetails(temp);
+        return ResponseEntity
+                .badRequest()
+                .body(errorResponseMap);
     }
 }

@@ -63,7 +63,7 @@ public class AuthentiactionController {
         if (errors.hasErrors()) {
             throw new MethodArgumentNotValidException(errors);
         }
-        if (user != null) {
+        if (user == null) {
             LOGGER.info("Inside addIssuer, adding: " + user.toString());
             throw new HttpMessageNotReadableException("Missing field");
         } else {
@@ -80,11 +80,10 @@ public class AuthentiactionController {
 
         try{
 
-            UserMapping userMapping = new UserMapping(user);
-            User user1 = userMapping.getUserEntity();
+            User newUser = UserMapping.registerToEntity(user);
+            String roleName = "USER";
+            userService.saveUser(newUser,roleName);
 
-            userService.saveUser(user1);
-            userService.addRoleToUser(user.getEmail(),"USER");
 
             SuccessResponse response = new SuccessResponse();
             response.setStatus(HttpStatus.OK.value());
@@ -107,8 +106,10 @@ public class AuthentiactionController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         AppUserDetail userDetails = (AppUserDetail) authentication.getPrincipal();
 
+
         String accessToken = jwtUtils.generateJwtToken(userDetails);
         String refreshToken = jwtUtils.generateRefreshJwtToken(userDetails);
+        User loginUser = userService.findByUsername(user.getUsername());
 
         SuccessResponse response = new SuccessResponse();
         response.setStatus(HttpStatus.OK.value());
@@ -117,12 +118,13 @@ public class AuthentiactionController {
 
         response.getData().put("accessToken",accessToken);
         response.getData().put("refreshToken",refreshToken);
-        response.getData().put("info",userDetails);
-
+        response.getData().put("name",loginUser.getTenhienthi());
+        response.getData().put("image",loginUser.getImage());
+        
         return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
     }
     @PostMapping("/refreshtoken")
-    public ResponseEntity<SuccessResponse> refreshToken(@Parameter String refreshToken, HttpServletRequest request) {
+    public ResponseEntity<SuccessResponse> refreshToken(@RequestBody Map<String,String> refreshToken, HttpServletRequest request) {
         String authorizationHeader = request.getHeader(AUTHORIZATION);
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
             String accessToken = authorizationHeader.substring("Bearer ".length());
@@ -131,16 +133,20 @@ public class AuthentiactionController {
                 throw new BadCredentialsException("access token is not expired");
             }
 
+            if(jwtUtils.validateExpiredToken(refreshToken.get("refreshToken")) == true){
+                throw new BadCredentialsException("refresh token is expired");
+            }
+
             if(refreshToken == null){
                 throw new BadCredentialsException("refresh token is missing");
             }
 
-            if(!jwtUtils.getUserNameFromJwtToken(accessToken).equals(jwtUtils.getUserNameFromJwtToken(refreshToken))){
+            if(!jwtUtils.getUserNameFromJwtToken(refreshToken.get("refreshToken")).equals(jwtUtils.getUserNameFromJwtToken(refreshToken.get("refreshToken")))){
                 throw new BadCredentialsException("two token are not a pair");
             }
 
 
-            AppUserDetail userDetails =  AppUserDetail.build(userService.findByUsername(jwtUtils.getUserNameFromJwtToken(refreshToken)));
+            AppUserDetail userDetails =  AppUserDetail.build(userService.findByUsername(jwtUtils.getUserNameFromJwtToken(refreshToken.get("refreshToken"))));
 
             accessToken = jwtUtils.generateJwtToken(userDetails);
 
