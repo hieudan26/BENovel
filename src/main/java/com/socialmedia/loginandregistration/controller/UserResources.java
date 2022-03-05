@@ -47,6 +47,32 @@ public class UserResources {
     @Autowired
     JwtUtils jwtUtils;
 
+    @GetMapping("/info")
+    @ResponseBody
+    public ResponseEntity<SuccessResponse>  getInfo(HttpServletRequest request) throws Exception {
+        String authorizationHeader = request.getHeader(AUTHORIZATION);
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            String accessToken = authorizationHeader.substring("Bearer ".length());
+
+            if(jwtUtils.validateExpiredToken(accessToken) == true){
+                throw new BadCredentialsException("access token is  expired");
+            }
+
+            User user = userService.findByUsername(jwtUtils.getUserNameFromJwtToken(accessToken));
+
+            SuccessResponse response = new SuccessResponse();
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Info user");
+            response.setSuccess(true);
+            response.getData().put("userInfo",user);
+
+            return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
+        }
+        else
+        {
+            throw new BadCredentialsException("access token is missing");
+        }
+    }
     @PutMapping("/info")
     @ResponseBody
     public ResponseEntity<SuccessResponse>  updateInfo(@RequestBody @Valid InfoUserRequest userInfo, BindingResult errors, HttpServletRequest request) throws Exception {
