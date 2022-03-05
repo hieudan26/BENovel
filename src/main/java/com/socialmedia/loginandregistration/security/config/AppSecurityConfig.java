@@ -54,6 +54,8 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests().antMatchers("/api/auth/**").permitAll()
                 .antMatchers(HttpMethod.GET,"/api/admin/**").hasAnyAuthority(ADMIN_READ.getPermission())
                 .antMatchers(HttpMethod.POST,"/api/admin/**").hasAnyAuthority(ADMIN_WRITE.name())
+                .antMatchers(HttpMethod.GET,"/api/user/**").hasAnyAuthority(USER_READ.getPermission())
+                .antMatchers(HttpMethod.POST,"/api/user/**").hasAnyAuthority(USER_WRITE.name())
                 .anyRequest().permitAll();
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
