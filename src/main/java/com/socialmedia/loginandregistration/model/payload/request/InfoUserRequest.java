@@ -13,8 +13,6 @@ import java.util.Date;
 public class InfoUserRequest {
     protected  String tenhienthi;
     protected Date birthdate;
-    protected   Date createdate;
     protected  String image;
-    protected Boolean active;
-    protected  String status;
+
 }

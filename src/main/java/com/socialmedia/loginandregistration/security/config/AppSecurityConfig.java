@@ -53,9 +53,9 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests().antMatchers("/api/auth/**").permitAll()
                 .antMatchers(HttpMethod.GET,"/api/admin/**").hasAnyAuthority(ADMIN_READ.getPermission())
-                .antMatchers(HttpMethod.POST,"/api/admin/**").hasAnyAuthority(ADMIN_WRITE.name())
-                .antMatchers(HttpMethod.GET,"/api/user/**").hasAnyAuthority(USER_READ.getPermission())
-                .antMatchers(HttpMethod.POST,"/api/user/**").hasAnyAuthority(USER_WRITE.name())
+                .antMatchers(HttpMethod.POST,"/api/admin/**").hasAnyAuthority(ADMIN_WRITE.getPermission())
+                .antMatchers(HttpMethod.GET,"/api/user/**").hasAnyAuthority(USER_READ.getPermission(),ADMIN_READ.getPermission())
+                .antMatchers(HttpMethod.POST,"/api/user/**").hasAnyAuthority(USER_WRITE.getPermission(),ADMIN_WRITE.getPermission())
                 .anyRequest().permitAll();
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

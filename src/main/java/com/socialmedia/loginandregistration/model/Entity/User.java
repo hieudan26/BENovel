@@ -1,5 +1,6 @@
 package com.socialmedia.loginandregistration.model.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Unwrapped;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -17,10 +18,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @RestResource(exported=false)
 @Document(collection = "User")
 public class User {
+    @JsonIgnore
     @Id
     protected  ObjectId _id;
     protected  String username;
     protected  String email;
+    @JsonIgnore
     protected  String password;
     protected  String tenhienthi;
     protected   Date  birthdate;

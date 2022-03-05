@@ -73,6 +73,7 @@ public class AdminResource {
         try{
 
             User newUser = UserMapping.registerToEntity(user);
+            newUser.setActive(true);
             userService.saveUser(newUser,user.getRoles());
 
             SuccessResponse response = new SuccessResponse();

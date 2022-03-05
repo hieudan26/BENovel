@@ -1,4 +1,5 @@
 package com.socialmedia.loginandregistration.model.Entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -7,6 +8,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 @RestResource(exported=false)
 @Document(collection = "Role")
 public class Role {
+    @JsonIgnore
     @Id
     protected ObjectId _id;
     protected String name;

@@ -2,8 +2,10 @@ package com.socialmedia.loginandregistration.Service.Impl;
 
 import com.socialmedia.loginandregistration.Service.UserService;
 
+import com.socialmedia.loginandregistration.mapping.UserMapping;
 import com.socialmedia.loginandregistration.model.Entity.Role;
 import com.socialmedia.loginandregistration.model.Entity.User;
+import com.socialmedia.loginandregistration.model.payload.request.InfoUserRequest;
 import com.socialmedia.loginandregistration.repository.RoleRepository;
 import com.socialmedia.loginandregistration.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -85,5 +87,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findByUsername(String username) {
          return userRepository.findByUsername(username).get();
+    }
+
+    @Override
+    public User updateInfoUser(User user, InfoUserRequest userInfo) {
+        user = UserMapping.UpdateUserInfoByUser(user,userInfo);
+        return userRepository.save(user);
+    }
+
+    @Override
+    public Optional<User> deleteUser(String username) {
+        User user = findByUsername(username);
+        return userRepository.deleteUserBy_id(user.getId());
     }
 }

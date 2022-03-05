@@ -158,7 +158,6 @@ public class AuthentiactionController {
 
             response.getData().put("accessToken",accessToken);
             response.getData().put("refreshToken",refreshToken);
-            response.getData().put("info",userDetails);
 
             return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
         }

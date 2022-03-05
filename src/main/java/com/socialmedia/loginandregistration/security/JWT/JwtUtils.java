@@ -38,7 +38,7 @@ public class JwtUtils {
         Algorithm algorithm = Algorithm.HMAC256(jwtSecret.getBytes());
         String access_token = JWT.create()
                 .withSubject(userPrincipal.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis()+ 10*60*1000))
+                .withExpiresAt(new Date(System.currentTimeMillis()+ jwtExpirationMs))
                 .withClaim("roleNames",userPrincipal.getRoles().stream().collect(Collectors.toList()))
                 .withClaim("rolePermissions",userPrincipal.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .sign(algorithm);
@@ -49,7 +49,7 @@ public class JwtUtils {
         Algorithm algorithm = Algorithm.HMAC256(jwtSecret.getBytes());
         String refresh_token = JWT.create()
                 .withSubject(userPrincipal.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis()+ 10*60*1000))
+                .withExpiresAt(new Date(System.currentTimeMillis()+ refreshJwtExpirationMs))
                 .sign(algorithm);
         return refresh_token;
     }
