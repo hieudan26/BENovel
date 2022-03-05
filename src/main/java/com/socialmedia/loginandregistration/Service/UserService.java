@@ -19,6 +19,7 @@ public interface UserService {
     Boolean existsByEmail(String email);
     Boolean existsByUsername(String username);
     User findByUsername(String username);
-    User updateInfoUser(User user, InfoUserRequest userInfo);
+    User updateUserInfo(User user, InfoUserRequest userInfo);
+    User updateUserPassword(User user, String password);
     Optional<User> deleteUser(String username);
 }

@@ -1,19 +1,12 @@
 package com.socialmedia.loginandregistration.controller;
 
-import com.socialmedia.loginandregistration.Service.RoleService;
 import com.socialmedia.loginandregistration.Service.UserService;
-import com.socialmedia.loginandregistration.mapping.UserMapping;
 import com.socialmedia.loginandregistration.model.Entity.User;
-import com.socialmedia.loginandregistration.model.payload.request.InfoUserRequest;
-import com.socialmedia.loginandregistration.model.payload.request.RegisterAdminRequest;
-import com.socialmedia.loginandregistration.model.payload.request.RegisterRequest;
-import com.socialmedia.loginandregistration.model.payload.request.RoleToUserRequest;
+import com.socialmedia.loginandregistration.model.payload.request.*;
 import com.socialmedia.loginandregistration.model.payload.response.BaseCustomResponse.HttpMessageNotReadableException;
 import com.socialmedia.loginandregistration.model.payload.response.BaseCustomResponse.MethodArgumentNotValidException;
-import com.socialmedia.loginandregistration.model.payload.response.BaseCustomResponse.RecordNotFoundException;
 import com.socialmedia.loginandregistration.model.payload.response.ErrorResponseMap;
 import com.socialmedia.loginandregistration.model.payload.response.SuccessResponse;
-import com.socialmedia.loginandregistration.security.DTO.AppUserDetail;
 import com.socialmedia.loginandregistration.security.JWT.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -23,13 +16,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
@@ -41,6 +35,7 @@ public class UserResources {
     private static final Logger LOGGER = LogManager.getLogger(AdminResource.class);
 
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
     AuthenticationManager authenticationManager;
@@ -85,7 +80,7 @@ public class UserResources {
             }
 
             User user = userService.findByUsername(jwtUtils.getUserNameFromJwtToken(accessToken));
-            user = userService.updateInfoUser(user,userInfo);
+            user = userService.updateUserInfo(user,userInfo);
 
             SuccessResponse response = new SuccessResponse();
             response.setStatus(HttpStatus.OK.value());
@@ -100,9 +95,12 @@ public class UserResources {
             throw new BadCredentialsException("access token is missing");
         }
     }
-    @DeleteMapping("")
+    @PutMapping("/info/password")
     @ResponseBody
-    public ResponseEntity<SuccessResponse>  deleteUser(HttpServletRequest request) throws Exception {
+    public ResponseEntity<SuccessResponse>  updatePassword(@RequestBody @Valid ChangePassRequest pass, BindingResult errors, HttpServletRequest request) throws Exception {
+        if (errors.hasErrors()) {
+            throw new MethodArgumentNotValidException(errors);
+        }
         String authorizationHeader = request.getHeader(AUTHORIZATION);
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
             String accessToken = authorizationHeader.substring("Bearer ".length());
@@ -112,6 +110,65 @@ public class UserResources {
             }
 
             String username = jwtUtils.getUserNameFromJwtToken(accessToken);
+            User user= userService.findByUsername(username);
+
+
+            if(user == null){
+                throw new HttpMessageNotReadableException("user is not existed");
+            }
+
+            if(pass == null){
+                throw new HttpMessageNotReadableException("password is not existed");
+            }
+
+            if(!(passwordEncoder.matches(pass.getPassword(),user.getPassword()))){
+                throw new BadCredentialsException("username or password is not matched");
+            }
+
+            userService.updateUserPassword(user,pass.getNewPassword());
+
+            SuccessResponse response = new SuccessResponse();
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("upadate password successful");
+            response.setSuccess(true);
+            response.getData().put("username",username);
+            return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
+        }
+        else
+        {
+            throw new BadCredentialsException("access token is missing");
+        }
+    }
+    @DeleteMapping("")
+    @ResponseBody
+    public ResponseEntity<SuccessResponse>  deleteUser(@RequestBody @Valid LoginRequest user, BindingResult errors, HttpServletRequest request) throws Exception {
+        if (errors.hasErrors()) {
+            throw new MethodArgumentNotValidException(errors);
+        }
+       String authorizationHeader = request.getHeader(AUTHORIZATION);
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            String accessToken = authorizationHeader.substring("Bearer ".length());
+
+            if(jwtUtils.validateExpiredToken(accessToken) == true){
+                throw new BadCredentialsException("access token is expired");
+            }
+
+            String username = jwtUtils.getUserNameFromJwtToken(accessToken);
+            User userDeleted = userService.findByUsername(username);
+
+
+            if(userDeleted == null){
+                throw new HttpMessageNotReadableException("user is not existed");
+            }
+
+            if(user == null){
+                throw new HttpMessageNotReadableException("user is not existed");
+            }
+
+            if(!(passwordEncoder.matches(user.getPassword(),userDeleted.getPassword())&& username.equals(user.getUsername()))){
+                throw new BadCredentialsException("username or password is not matched");
+            }
+
             userService.deleteUser(username);
 
             SuccessResponse response = new SuccessResponse();

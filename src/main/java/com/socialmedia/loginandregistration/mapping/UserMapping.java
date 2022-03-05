@@ -27,4 +27,10 @@ public class UserMapping {
         user.setImage(userInfo.getImage());
         return  user;
     }
+
+    public static User UpdatePasswordByUser(User user, String password) {
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        user.setPassword(passwordEncoder.encode(password));
+        return  user;
+    }
 }

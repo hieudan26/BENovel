@@ -90,8 +90,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateInfoUser(User user, InfoUserRequest userInfo) {
+    public User updateUserInfo(User user, InfoUserRequest userInfo) {
         user = UserMapping.UpdateUserInfoByUser(user,userInfo);
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User updateUserPassword(User user, String password) {
+        user = UserMapping.UpdatePasswordByUser(user,password);
         return userRepository.save(user);
     }
 
@@ -100,4 +106,5 @@ public class UserServiceImpl implements UserService {
         User user = findByUsername(username);
         return userRepository.deleteUserBy_id(user.getId());
     }
+
 }
