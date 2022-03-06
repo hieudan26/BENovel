@@ -5,6 +5,7 @@ import mobile.Service.UserService;
 import mobile.mapping.UserMapping;
 import mobile.model.Entity.User;
 import mobile.model.payload.request.LoginRequest;
+import mobile.model.payload.request.ReActiveRequest;
 import mobile.model.payload.request.RefreshTokenRequest;
 import mobile.model.payload.request.RegisterRequest;
 import mobile.model.payload.response.BaseCustomResponse.RecordNotFoundException;
@@ -15,6 +16,7 @@ import mobile.model.payload.response.SuccessResponse;
 import mobile.security.DTO.AppUserDetail;
 import mobile.security.JWT.JwtUtils;
 import lombok.RequiredArgsConstructor;
+import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 
@@ -77,7 +80,7 @@ public class AuthentiactionController {
             userService.saveUser(newUser,roleName);
             String token = jwtUtils.generateEmailJwtToken(user.getUsername());
 
-            emailService.sendSimpleMessage(user.getEmail(),token);
+            emailService.sendActiveMessage(newUser);
 
             SuccessResponse response = new SuccessResponse();
             response.setStatus(HttpStatus.OK.value());
@@ -174,7 +177,7 @@ public class AuthentiactionController {
     }
 
     @GetMapping("/active")
-    public ResponseEntity<SuccessResponse> refreshToken( @RequestParam(defaultValue = "") String key
+    public ResponseEntity<SuccessResponse> activeToken( @RequestParam(defaultValue = "") String key
     ) {
         if(key != null && key !=""){
             if(!jwtUtils.validateJwtToken(key)){
@@ -214,4 +217,79 @@ public class AuthentiactionController {
         }
     }
 
+    @PostMapping("/reactive")
+    public ResponseEntity<SuccessResponse> reActiveToken(@RequestBody @Valid ReActiveRequest reActiveRequest  , BindingResult errors) throws Exception {
+
+        if (errors.hasErrors()) {
+            throw new MethodArgumentNotValidException(errors);
+        }
+        if (reActiveRequest == null) {
+            throw new HttpMessageNotReadableException("Missing field");
+        }
+
+        if(!userService.existsByEmail(reActiveRequest.getEmail())){
+            throw new HttpMessageNotReadableException("Email is not Registed");
+        }
+
+        User user = userService.getUser(reActiveRequest.getEmail());
+
+        if(user.getActive() == true){
+            throw new HttpMessageNotReadableException("user already has been actived!");
+        }
+
+
+        try{
+
+            emailService.sendActiveMessage(user);
+
+
+            SuccessResponse response = new SuccessResponse();
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Resend email successful");
+            response.setSuccess(true);
+
+            response.getData().put("email",user.getEmail());
+
+            return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
+        }catch (Exception ex){
+            throw  new Exception("Some error when send active email");
+        }
+    }
+
+    @PostMapping("/forgetpassword")
+    public ResponseEntity<SuccessResponse> forgetPassword(@RequestBody @Valid ReActiveRequest reActiveRequest  , BindingResult errors) throws Exception {
+
+        if (errors.hasErrors()) {
+            throw new MethodArgumentNotValidException(errors);
+        }
+        if (reActiveRequest == null) {
+            throw new HttpMessageNotReadableException("Missing field");
+        }
+
+        if(!userService.existsByEmail(reActiveRequest.getEmail())){
+            throw new HttpMessageNotReadableException("Email is not Registed");
+        }
+
+        User user = userService.getUser(reActiveRequest.getEmail());
+
+        try{
+
+            RandomString gen = new RandomString(8, ThreadLocalRandom.current());
+            String newpass = gen.nextString();
+
+            user = userService.updateUserPassword(user,newpass);
+            emailService.sendForgetPasswordMessage(user,newpass);
+
+
+            SuccessResponse response = new SuccessResponse();
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Send email with new password successful");
+            response.setSuccess(true);
+            response.getData().put("email",user.getEmail());
+
+            return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
+        }catch (Exception ex){
+            throw  new Exception("Some error when send active email");
+        }
+    }
 }
