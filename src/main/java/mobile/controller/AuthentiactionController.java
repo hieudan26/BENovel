@@ -116,6 +116,9 @@ public class AuthentiactionController {
             return SendErrorValid("password","password is not matched","Wrong password");
         }
 
+        if(!loginUser.getActive()){
+            throw new BadCredentialsException("Your account haven't activated");
+        }
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);

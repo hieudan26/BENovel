@@ -19,14 +19,16 @@ public class AppUserDetail implements UserDetails {
     @JsonIgnore
     private Collection<? extends GrantedAuthority> authorities;
     private Collection<String> roles;
+    private Boolean enable;
     public AppUserDetail(ObjectId id, String username, String email, String password,
-                         Collection<? extends GrantedAuthority> authorities,Collection<String> roles) {
+                         Collection<? extends GrantedAuthority> authorities,Collection<String> roles,Boolean active) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
         this.authorities = authorities;
         this.roles = roles;
+        this.enable = active;
     }
     public static AppUserDetail build(User user) {
         Set<GrantedAuthority> authorities = new HashSet<>();
@@ -48,7 +50,8 @@ public class AppUserDetail implements UserDetails {
                 user.getEmail(),
                 user.getPassword(),
                 authorities,
-                roleNames);
+                roleNames,
+                user.getActive());
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -82,7 +85,7 @@ public class AppUserDetail implements UserDetails {
     }
     @Override
     public boolean isEnabled() {
-        return true;
+        return enable;
     }
     @Override
     public boolean equals(Object o) {
