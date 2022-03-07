@@ -117,7 +117,7 @@ public class AuthentiactionController {
         }
 
         if(!loginUser.getActive()){
-            throw new BadCredentialsException("Your account haven't activated");
+            return SendErrorValid("active","Your account haven't activated","Unactivated account");
         }
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
