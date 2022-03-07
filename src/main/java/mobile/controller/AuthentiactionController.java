@@ -135,6 +135,7 @@ public class AuthentiactionController {
         response.getData().put("refreshToken",refreshToken);
         response.getData().put("name",loginUser.getTenhienthi());
         response.getData().put("image",loginUser.getImage());
+        response.getData().put("roles",userDetails.getRoles());
 
         return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
     }
