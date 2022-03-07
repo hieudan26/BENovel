@@ -8,6 +8,7 @@ import java.util.List;
 public interface NovelService {
     List<Novel> getNovels();
     Novel findByName(String name);
+    Novel findByUrl(String url);
     List<Novel> getNovels(Pageable pageable);
     List<Novel> findAllByStatus(String status,Pageable pageable);
     List<Novel> SearchByTentruyen(String value,Pageable pageable);

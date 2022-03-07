@@ -37,6 +37,12 @@ public class NovelServiceImpl implements NovelService {
     }
 
     @Override
+    public Novel findByUrl(String url) {
+        log.info("Fetching  Novel: "+url);
+        return novelRepository.findByUrl(url).get();
+    }
+
+    @Override
     public List<Novel> findAllByStatus(String status, Pageable pageable) {
         log.info("Fetching  Novel status: "+status);
         return novelRepository.findAllByStatus(status,pageable);

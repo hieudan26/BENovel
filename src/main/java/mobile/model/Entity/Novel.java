@@ -20,14 +20,20 @@ public class Novel {
     protected String theloai;
     protected String trangthai;
     protected String status;
+    protected String url;
 
+    public String getUrl() {
+        return url;
+    }
 
-
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
     public Novel() {
     }
 
-    public Novel(ObjectId _id, int danhgia, String hinhanh, int luotdoc, String nguoidangtruyen, String noidung, int soluongdanhgia, String tacgia, String tentruyen, String theloai, String trangthai, String status) {
+    public Novel(ObjectId _id, int danhgia, String hinhanh, int luotdoc, String nguoidangtruyen, String noidung, int soluongdanhgia, String tacgia, String tentruyen, String theloai, String trangthai, String status,String url) {
         this._id = _id;
         this.danhgia = danhgia;
         this.hinhanh = hinhanh;
@@ -40,6 +46,7 @@ public class Novel {
         this.theloai = theloai;
         this.trangthai = trangthai;
         this.status = status;
+        this.url = url;
     }
 
     public ObjectId getId() {

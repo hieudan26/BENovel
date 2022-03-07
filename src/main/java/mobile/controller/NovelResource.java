@@ -91,27 +91,27 @@ public class NovelResource {
 
 
 
-    @GetMapping("/novel/{name}")
+    @GetMapping("/novel/{url}")
     @ResponseBody
-    public ResponseEntity<Novel> getNovelByName(@PathVariable String name) {
+    public ResponseEntity<Novel> getNovelByName(@PathVariable String url) {
 
-        Novel novel = novelService.findByName(name);
+        Novel novel = novelService.findByUrl(url);
         if(novel == null) {
             throw new RecordNotFoundException("No Novel existing " );
         }
         return new ResponseEntity<Novel>(novel, HttpStatus.OK);
     }
 
-    @GetMapping("/novel/{name}/chuong")
+    @GetMapping("/novel/{url}/chuong")
     @ResponseBody
-    public ResponseEntity<List<Chapter>> getChapterpagination(@PathVariable String name,
+    public ResponseEntity<List<Chapter>> getChapterpagination(@PathVariable String url,
                                                     @RequestParam(defaultValue = "0") int page,
                                                     @RequestParam(defaultValue = "3") int size) {
         Pageable pageable = PageRequest.of(page, size,Sort.by("chapnumber"));
 
-        Novel novel = novelService.findByName(name);
+        Novel novel = novelService.findByUrl(url);
         if(novel == null) {
-            throw new RecordNotFoundException("Not found novel: "+name);
+            throw new RecordNotFoundException("Not found novel: "+url);
         }
 
         List<Chapter> chapterList = chapterService.findByDauTruyen(novel.getId(),pageable);
@@ -121,10 +121,10 @@ public class NovelResource {
         return new ResponseEntity<List<Chapter>>(chapterList, HttpStatus.OK);
     }
 
-    @GetMapping("/novel/{name}/chuong/{chapterNumber}")
+    @GetMapping("/novel/{url}/chuong/{chapterNumber}")
     @ResponseBody
-    public ResponseEntity<Chapter> getChapter(@PathVariable String name,@PathVariable int chapterNumber) {
-        Novel novel = novelService.findByName(name);
+    public ResponseEntity<Chapter> getChapter(@PathVariable String url,@PathVariable int chapterNumber) {
+        Novel novel = novelService.findByUrl(url);
         Chapter chapter = chapterService.findByDauTruyenAndChapterNumber(novel.getId(),chapterNumber);
         if(chapter == null) {
             throw new RecordNotFoundException("No Chapter existing " );

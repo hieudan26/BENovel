@@ -90,6 +90,7 @@
             <artifactId>java-jwt</artifactId>
             <version>3.18.3</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/io.springfox/springfox-bean-validators -->
 
         <dependency>
             <groupId>io.springfox</groupId>
