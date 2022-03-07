@@ -81,7 +81,6 @@ public class AuthentiactionController {
             User newUser = UserMapping.registerToEntity(user);
             String roleName = "USER";
             userService.saveUser(newUser,roleName);
-            String token = jwtUtils.generateEmailJwtToken(user.getUsername());
 
             emailService.sendActiveMessage(newUser);
 
@@ -200,7 +199,7 @@ public class AuthentiactionController {
     @GetMapping("/active")
     public ResponseEntity<SuccessResponse> activeToken( @RequestParam(defaultValue = "") String key
     ) {
-        if(key != null && key !=""){
+            if(key == null || key ==""){
                 throw new BadCredentialsException("key active is not valid");
             }
 
