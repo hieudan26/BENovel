@@ -1,11 +1,10 @@
 package mobile.controller;
 
 import mobile.Service.ChapterService;
-import mobile.Service.EmailService;
 import mobile.Service.NovelService;
 import mobile.model.Entity.Chapter;
 import mobile.model.Entity.Novel;
-import mobile.model.payload.response.BaseCustomResponse.RecordNotFoundException;
+import mobile.Handler.RecordNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

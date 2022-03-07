@@ -1,4 +1,4 @@
-package mobile.model.payload.response.BaseCustomResponse;
+package mobile.Handler;
 
 import mobile.model.payload.response.ErrorResponse;
 import mobile.model.payload.response.ErrorResponseMap;

@@ -1,4 +1,4 @@
-package mobile.model.payload.response.BaseCustomResponse;
+package mobile.Handler;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

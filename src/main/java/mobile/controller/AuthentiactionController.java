@@ -8,10 +8,10 @@ import mobile.model.payload.request.LoginRequest;
 import mobile.model.payload.request.ReActiveRequest;
 import mobile.model.payload.request.RefreshTokenRequest;
 import mobile.model.payload.request.RegisterRequest;
-import mobile.model.payload.response.BaseCustomResponse.RecordNotFoundException;
+import mobile.Handler.RecordNotFoundException;
 import mobile.model.payload.response.ErrorResponseMap;
-import mobile.model.payload.response.BaseCustomResponse.HttpMessageNotReadableException;
-import mobile.model.payload.response.BaseCustomResponse.MethodArgumentNotValidException;
+import mobile.Handler.HttpMessageNotReadableException;
+import mobile.Handler.MethodArgumentNotValidException;
 import mobile.model.payload.response.SuccessResponse;
 import mobile.security.DTO.AppUserDetail;
 import mobile.security.JWT.JwtUtils;
@@ -25,6 +25,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.apache.logging.log4j.LogManager;
@@ -45,6 +47,7 @@ public class AuthentiactionController {
 
     private final UserService userService;
     private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     @Autowired
     AuthenticationManager authenticationManager;
 
@@ -66,11 +69,11 @@ public class AuthentiactionController {
         }
 
         if(userService.existsByEmail(user.getEmail())){
-            return SendErrorValid("email",user.getEmail());
+            return SendErrorValid("email",user.getEmail()+"\" has already used\"","Field already taken");
         }
 
         if(userService.existsByUsername(user.getUsername())){
-            return SendErrorValid("username",user.getUsername());
+            return SendErrorValid("username",user.getUsername()+"\" has already used\"","Field already taken");
         }
 
         try{
@@ -99,6 +102,20 @@ public class AuthentiactionController {
     @ResponseBody
     public ResponseEntity<SuccessResponse>  Sigin(@RequestBody @Valid LoginRequest user, BindingResult errors) throws Exception {
 
+        if (errors.hasErrors()) {
+            throw new MethodArgumentNotValidException(errors);
+        }
+
+        if(!userService.existsByUsername(user.getUsername())){
+            return SendErrorValid("username",user.getUsername()+" not found","No account found");
+        }
+
+        User loginUser = userService.findByUsername(user.getUsername());
+
+        if(!(passwordEncoder.matches(user.getPassword(),loginUser.getPassword()))){
+            return SendErrorValid("password","password is not matched","Wrong password");
+        }
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -107,7 +124,7 @@ public class AuthentiactionController {
 
         String accessToken = jwtUtils.generateJwtToken(userDetails);
         String refreshToken = jwtUtils.generateRefreshJwtToken(userDetails);
-        User loginUser = userService.findByUsername(user.getUsername());
+
 
         SuccessResponse response = new SuccessResponse();
         response.setStatus(HttpStatus.OK.value());
@@ -164,11 +181,11 @@ public class AuthentiactionController {
         }
     }
 
-    private ResponseEntity SendErrorValid(String field, String message){
+    private ResponseEntity SendErrorValid(String field, String message,String title){
         ErrorResponseMap errorResponseMap = new ErrorResponseMap();
         Map<String,String> temp =new HashMap<>();
-        errorResponseMap.setMessage("Field already taken");
-        temp.put(field,message+" has already used");
+        errorResponseMap.setMessage(title);
+        temp.put(field,message);
         errorResponseMap.setStatus(HttpStatus.BAD_REQUEST.value());
         errorResponseMap.setDetails(temp);
         return ResponseEntity
@@ -180,10 +197,6 @@ public class AuthentiactionController {
     public ResponseEntity<SuccessResponse> activeToken( @RequestParam(defaultValue = "") String key
     ) {
         if(key != null && key !=""){
-            if(!jwtUtils.validateJwtToken(key)){
-                if(!jwtUtils.validateExpiredToken(key)){
-                    throw new BadCredentialsException("key active is expired");
-                }
                 throw new BadCredentialsException("key active is not valid");
             }
 
@@ -210,11 +223,6 @@ public class AuthentiactionController {
             response.getData().put("email",user.getEmail());
 
             return new ResponseEntity<SuccessResponse>(response,HttpStatus.OK);
-        }
-        else
-        {
-            throw new BadCredentialsException("key active mising");
-        }
     }
 
     @PostMapping("/reactive")

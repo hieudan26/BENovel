@@ -78,7 +78,7 @@ public class JwtUtils {
         return email_token;
     }
 
-    public boolean validateJwtToken(String authToken) {
+    public boolean validateJwtToken(String authToken) throws ExpiredJwtException {
         try {
             Jwts.parser()
                     .setSigningKey(jwtSecret.getBytes())
