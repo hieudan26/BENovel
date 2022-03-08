@@ -123,7 +123,7 @@ public class NovelResource {
         return new ResponseEntity<List<Chapter>>(chapterList, HttpStatus.OK);
     }
 
-    @GetMapping("/novel/{url}/muluc")
+    @GetMapping("/novel/{url}/mucluc")
     @ResponseBody
     public ResponseEntity<List<Object>> getMuclucpagination(@PathVariable String url,
                                                               @RequestParam(defaultValue = "0") int page,
@@ -142,7 +142,7 @@ public class NovelResource {
         return new ResponseEntity<List<Object>>(chapterList, HttpStatus.OK);
     }
 
-    @GetMapping("/novel/{url}/muluc/total")
+    @GetMapping("/novel/{url}/mucluc/total")
     @ResponseBody
     public ResponseEntity<Map<String,Integer>> getTotalChapter(@PathVariable String url) {
 
