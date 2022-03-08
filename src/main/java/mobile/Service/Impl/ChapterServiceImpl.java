@@ -34,5 +34,15 @@ public class ChapterServiceImpl implements ChapterService {
         return chapterRepository.findByDautruyenIdAndChapnumber(id,number).get();
     }
 
+    @Override
+    public int countByDauTruyen(ObjectId id) {
+        log.info("count all chapter  Novel id: "+id.toHexString());
+        return chapterRepository.countAllByDautruyenId(id);
+    }
 
+    @Override
+    public List<Object> getNameAndChapnumber(ObjectId id,Pageable pageable) {
+        log.info("fetch all chapter  Novel id: "+id.toHexString());
+        return chapterRepository.getTenchapAndChapNumberByDautruyenId(id,pageable);
+    }
 }

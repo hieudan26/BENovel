@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.PageRequest;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/novels")
@@ -119,6 +121,41 @@ public class NovelResource {
             throw new RecordNotFoundException("No Chapter existing");
         }
         return new ResponseEntity<List<Chapter>>(chapterList, HttpStatus.OK);
+    }
+
+    @GetMapping("/novel/{url}/muluc")
+    @ResponseBody
+    public ResponseEntity<List<Object>> getMuclucpagination(@PathVariable String url,
+                                                              @RequestParam(defaultValue = "0") int page,
+                                                              @RequestParam(defaultValue = "3") int size) {
+        Pageable pageable = PageRequest.of(page, size,Sort.by("chapnumber"));
+
+        Novel novel = novelService.findByUrl(url);
+        if(novel == null) {
+            throw new RecordNotFoundException("Not found novel: "+url);
+        }
+
+        List<Object> chapterList = chapterService.getNameAndChapnumber(novel.getId(),pageable);
+        if(chapterList == null) {
+            throw new RecordNotFoundException("No Chapter existing");
+        }
+        return new ResponseEntity<List<Object>>(chapterList, HttpStatus.OK);
+    }
+
+    @GetMapping("/novel/{url}/muluc/total")
+    @ResponseBody
+    public ResponseEntity<Map<String,Integer>> getTotalChapter(@PathVariable String url) {
+
+        Novel novel = novelService.findByUrl(url);
+        if(novel == null) {
+            throw new RecordNotFoundException("Not found novel: "+url);
+        }
+
+        int chaptolal = chapterService.countByDauTruyen(novel.getId());
+        Map<String,Integer> map = new HashMap<>();
+        map.put("total",chaptolal);
+
+        return new ResponseEntity<Map<String,Integer>>(map, HttpStatus.OK);
     }
 
     @GetMapping("/novel/{url}/chuong/{chapterNumber}")

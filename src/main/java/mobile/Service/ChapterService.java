@@ -10,4 +10,6 @@ public interface ChapterService {
     List<Chapter> findByDauTruyen(ObjectId id);
     Chapter findByDauTruyenAndChapterNumber(ObjectId id,int number);
     List<Chapter> findByDauTruyen(ObjectId id, Pageable pageable);
+    int countByDauTruyen(ObjectId id);
+    List<Object> getNameAndChapnumber(ObjectId id, Pageable pageable);
 }
