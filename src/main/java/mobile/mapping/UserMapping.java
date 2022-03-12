@@ -1,9 +1,9 @@
 package mobile.mapping;
 
 import mobile.model.Entity.User;
-import mobile.model.payload.request.InfoUserRequest;
-import mobile.model.payload.request.RegisterAdminRequest;
-import mobile.model.payload.request.RegisterRequest;
+import mobile.model.payload.request.user.InfoUserRequest;
+import mobile.model.payload.request.user.RegisterAdminRequest;
+import mobile.model.payload.request.authenticate.RegisterRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 

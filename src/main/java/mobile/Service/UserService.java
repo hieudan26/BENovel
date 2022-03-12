@@ -2,11 +2,10 @@ package mobile.Service;
 
 import mobile.model.Entity.Role;
 import mobile.model.Entity.User;
-import mobile.model.payload.request.InfoUserRequest;
+import mobile.model.payload.request.user.InfoUserRequest;
 
 
 import java.util.List;
-import java.util.Optional;
 
 
 public interface UserService {

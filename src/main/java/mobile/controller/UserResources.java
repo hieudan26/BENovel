@@ -2,15 +2,15 @@ package mobile.controller;
 
 import mobile.Service.UserService;
 import mobile.model.Entity.User;
-import mobile.model.payload.request.ChangePassRequest;
-import mobile.model.payload.request.InfoUserRequest;
+import mobile.model.payload.request.user.ChangePassRequest;
+import mobile.model.payload.request.user.InfoUserRequest;
 import mobile.Handler.HttpMessageNotReadableException;
 import mobile.Handler.MethodArgumentNotValidException;
 import mobile.model.payload.response.ErrorResponseMap;
 import mobile.model.payload.response.SuccessResponse;
 import mobile.security.JWT.JwtUtils;
 import lombok.RequiredArgsConstructor;
-import mobile.model.payload.request.LoginRequest;
+import mobile.model.payload.request.authenticate.LoginRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

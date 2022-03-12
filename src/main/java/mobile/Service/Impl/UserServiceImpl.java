@@ -5,7 +5,7 @@ import mobile.Service.UserService;
 import mobile.mapping.UserMapping;
 import mobile.model.Entity.Role;
 import mobile.model.Entity.User;
-import mobile.model.payload.request.InfoUserRequest;
+import mobile.model.payload.request.user.InfoUserRequest;
 import mobile.repository.RoleRepository;
 import mobile.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
