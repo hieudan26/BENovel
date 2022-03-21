@@ -15,5 +15,5 @@ import java.util.Optional;
 @EnableMongoRepositories
 public interface ReadingRepository  extends MongoRepository<Reading, ObjectId> {
     List<Reading> findByUserId(ObjectId id);
-    Optional<Reading> findByUserIdAndChapterIdAndDautruyenId (ObjectId userId,ObjectId chapterId, ObjectId dautruyenId);
+    Optional<Reading> findByUserIdAndDautruyenId (ObjectId userId, ObjectId dautruyenId);
 }

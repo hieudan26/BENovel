@@ -163,34 +163,26 @@ public class NovelResource {
 
 	@GetMapping("/novel/{url}/chuong/{chapterNumber}")
 	@ResponseBody
-	public ResponseEntity<Chapter> getChapter(@PathVariable String url, @PathVariable int chapterNumber) {
+	public ResponseEntity<Chapter> getChapter(@PathVariable String url, @PathVariable int chapterNumber,HttpServletRequest request) {
 		Novel novel = novelService.findByUrl(url);
 		Chapter chapter = chapterService.findByDauTruyenAndChapterNumber(novel.getId(), chapterNumber);
 		if (chapter == null) {
 			throw new RecordNotFoundException("No Chapter existing ");
 		}
-		return new ResponseEntity<Chapter>(chapter, HttpStatus.OK);
-	}
-
-	@GetMapping("/novel/{url}/chuong/{chapterNumber}")
-	@ResponseBody
-	public void setReading(@PathVariable String url, @PathVariable int chapterNumber, HttpServletRequest request) {
+		
 		String authorizationHeader = request.getHeader(AUTHORIZATION);
 		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
 			String accessToken = authorizationHeader.substring("Bearer ".length());
 
-			if (jwtUtils.validateExpiredToken(accessToken) == true) {
-				throw new BadCredentialsException("access token is expired");
-			}
-			
-			String username = jwtUtils.getUserNameFromJwtToken(accessToken);
-			User user = userService.findByUsername(username);
-			
-			Novel novel = novelService.findByUrl(url);
-			Chapter chapter = chapterService.findByDauTruyenAndChapterNumber(novel.getId(), chapterNumber);
-			
-			readingService.upsertReading(user, chapter, novel, url);		
-		}
+			if (jwtUtils.validateExpiredToken(accessToken) != true) {
+				String username = jwtUtils.getUserNameFromJwtToken(accessToken);
+				User user = userService.findByUsername(username);						
+				
+				readingService.upsertReading(user, chapter, novel, url);
+			}	
+		}		
+		
+		return new ResponseEntity<Chapter>(chapter, HttpStatus.OK);
 	}
 
 	@GetMapping("/tacgia/{tacgia}")

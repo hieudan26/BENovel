@@ -23,13 +23,14 @@ public class ReadingServiceImpl implements ReadingService{
 	
 	@Override
 	public void upsertReading(User user, Chapter chapter, Novel novel, String url) {
-		Optional<Reading> reading = readingRepository.findByUserIdAndChapterIdAndDautruyenId(user.getId(), chapter.getId(), novel.getId());
+		Optional<Reading> reading = readingRepository.findByUserIdAndDautruyenId(user.getId(), novel.getId());
 		if(reading.isEmpty()) {
 			Reading newReading = new Reading(novel.getId(),chapter.getId(),user.getId(),chapter.getChapnumber(),url);
 			readingRepository.save(newReading);
 		} else {
 			Reading oldReading = reading.get();
 			oldReading.setChapnumber(chapter.getChapnumber());
+			oldReading.setChapterId(chapter.getId());
 			readingRepository.save(oldReading);
 		}
 	}
